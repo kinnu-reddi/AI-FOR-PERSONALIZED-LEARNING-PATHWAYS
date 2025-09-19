@@ -1,57 +1,14 @@
 import { User, Course, Recommendation, LearningPath } from '../types';
 
 class AIService {
-  private apiUrl = 'http://localhost:5000/api';
-
   async generateRecommendations(user: User, availableCourses: Course[]): Promise<Recommendation[]> {
-    try {
-      const response = await fetch(`${this.apiUrl}/recommendations`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          user,
-          courses: availableCourses,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to get recommendations');
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('AI Service Error:', error);
-      // Fallback to local recommendations
-      return this.generateLocalRecommendations(user, availableCourses);
-    }
+    // Use local recommendations directly
+    return this.generateLocalRecommendations(user, availableCourses);
   }
 
   async adaptContent(content: string, user: User): Promise<string> {
-    try {
-      const response = await fetch(`${this.apiUrl}/adapt-content`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          content,
-          learningStyle: user.learningStyle,
-          skillLevel: user.skillLevel,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to adapt content');
-      }
-
-      const result = await response.json();
-      return result.adaptedContent;
-    } catch (error) {
-      console.error('Content adaptation error:', error);
-      return content; // Return original content as fallback
-    }
+    // Use local content adaptation
+    return this.adaptContentLocally(content, user);
   }
 
   async generateLearningPath(user: User, courses: Course[]): Promise<LearningPath> {
@@ -67,6 +24,28 @@ class AIService {
       currentCourse: recommendedCourses[0]?.id,
       estimatedCompletion: new Date(Date.now() + recommendedCourses.length * 7 * 24 * 60 * 60 * 1000),
     };
+  }
+
+  private adaptContentLocally(content: string, user: User): string {
+    let adaptedContent = content;
+    
+    // Adapt based on learning style
+    if (user.learningStyle === 'visual') {
+      adaptedContent = `📊 Visual Learning Mode\n\n${adaptedContent}\n\n💡 Tip: Look for diagrams and visual examples to enhance your understanding.`;
+    } else if (user.learningStyle === 'auditory') {
+      adaptedContent = `🎧 Auditory Learning Mode\n\n${adaptedContent}\n\n💡 Tip: Consider reading this content aloud or finding audio resources.`;
+    } else if (user.learningStyle === 'kinesthetic') {
+      adaptedContent = `🤲 Hands-on Learning Mode\n\n${adaptedContent}\n\n💡 Tip: Try to practice these concepts with real examples or exercises.`;
+    }
+    
+    // Adapt based on skill level
+    if (user.skillLevel === 'beginner') {
+      adaptedContent = `🌱 Beginner-Friendly Content\n\n${adaptedContent}\n\n📚 Remember: Take your time and don't hesitate to review concepts multiple times.`;
+    } else if (user.skillLevel === 'advanced') {
+      adaptedContent = `🚀 Advanced Content\n\n${adaptedContent}\n\n⚡ Challenge: Consider how you might apply these concepts to complex real-world scenarios.`;
+    }
+    
+    return adaptedContent;
   }
 
   private generateLocalRecommendations(user: User, courses: Course[]): Recommendation[] {
