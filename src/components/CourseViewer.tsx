@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, CheckCircle, PlayCircle, FileText, Video, Brain, Clock } from 'lucide-react';
+import { ArrowLeft, CheckCircle, PlayCircle, FileText, Video, Brain, Clock, Play, Pause } from 'lucide-react';
 import { useLearning } from '../hooks/useLearning';
 import { useAuth } from '../hooks/useAuth';
 import { Course, Module } from '../types';
@@ -17,6 +17,9 @@ export const CourseViewer: React.FC<CourseViewerProps> = ({ courseId, onBack }) 
   const [currentModuleIndex, setCurrentModuleIndex] = useState(0);
   const [adaptedContent, setAdaptedContent] = useState<string>('');
   const [loading, setLoading] = useState(true);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const [videoProgress, setVideoProgress] = useState(0);
+  const [videoDuration, setVideoDuration] = useState(0);
 
   useEffect(() => {
     const foundCourse = courses.find(c => c.id === courseId);
@@ -31,6 +34,8 @@ export const CourseViewer: React.FC<CourseViewerProps> = ({ courseId, onBack }) 
     if (!user) return;
     
     setLoading(true);
+    setVideoProgress(0);
+    setIsVideoPlaying(false);
     try {
       const adapted = await aiService.adaptContent(module.content, user);
       setAdaptedContent(adapted);
@@ -63,6 +68,28 @@ export const CourseViewer: React.FC<CourseViewerProps> = ({ courseId, onBack }) 
     loadAdaptedContent(course.modules[index]);
   };
 
+  const handleVideoPlay = () => {
+    setIsVideoPlaying(true);
+    // Simulate video progress
+    const interval = setInterval(() => {
+      setVideoProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          setIsVideoPlaying(false);
+          return 100;
+        }
+        return prev + 1;
+      });
+    }, 200); // Update every 200ms for smooth progress
+  };
+
+  const handleVideoPause = () => {
+    setIsVideoPlaying(false);
+  };
+
+  const handleVideoSeek = (percentage: number) => {
+    setVideoProgress(percentage);
+  };
   const getModuleIcon = (type: Module['type']) => {
     switch (type) {
       case 'video':
@@ -242,6 +269,88 @@ export const CourseViewer: React.FC<CourseViewerProps> = ({ courseId, onBack }) 
                     </div>
                   )}
 
+                  {/* Video Player for Video Modules */}
+                  {currentModule.type === 'video' && (
+                    <div className="mb-8">
+                      <div className="bg-black rounded-lg overflow-hidden">
+                        <div className="aspect-video bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center relative">
+                          {/* Video Placeholder */}
+                          <div className="text-center text-white">
+                            <Video className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                            <h3 className="text-lg font-medium mb-2">{currentModule.title}</h3>
+                            <p className="text-sm opacity-75">Educational Video Content</p>
+                          </div>
+                          
+                          {/* Play/Pause Overlay */}
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <button
+                              onClick={isVideoPlaying ? handleVideoPause : handleVideoPlay}
+                              className="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full p-4 transition-all"
+                            >
+                              {isVideoPlaying ? (
+                                <Pause className="w-8 h-8 text-white" />
+                              ) : (
+                                <Play className="w-8 h-8 text-white ml-1" />
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                        
+                        {/* Video Controls */}
+                        <div className="bg-gray-900 p-4">
+                          <div className="flex items-center space-x-4">
+                            <button
+                              onClick={isVideoPlaying ? handleVideoPause : handleVideoPlay}
+                              className="text-white hover:text-gray-300 transition-colors"
+                            >
+                              {isVideoPlaying ? (
+                                <Pause className="w-5 h-5" />
+                              ) : (
+                                <Play className="w-5 h-5" />
+                              )}
+                            </button>
+                            
+                            {/* Progress Bar */}
+                            <div className="flex-1">
+                              <div className="bg-gray-700 rounded-full h-2 cursor-pointer"
+                                   onClick={(e) => {
+                                     const rect = e.currentTarget.getBoundingClientRect();
+                                     const percentage = ((e.clientX - rect.left) / rect.width) * 100;
+                                     handleVideoSeek(percentage);
+                                   }}>
+                                <div
+                                  className="bg-indigo-500 h-2 rounded-full transition-all"
+                                  style={{ width: `${videoProgress}%` }}
+                                />
+                              </div>
+                            </div>
+                            
+                            <div className="text-white text-sm">
+                              {Math.floor((videoProgress / 100) * currentModule.duration)}:00 / {currentModule.duration}:00
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Auto-complete when video finishes */}
+                      {videoProgress >= 100 && !currentModule.completed && (
+                        <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center text-green-700">
+                              <CheckCircle className="w-5 h-5 mr-2" />
+                              <span className="font-medium">Video completed!</span>
+                            </div>
+                            <button
+                              onClick={handleModuleComplete}
+                              className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors text-sm"
+                            >
+                              Mark as Complete
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                   {currentModule.type === 'quiz' && (
                     <div className="mt-8 p-6 bg-gray-50 rounded-lg">
                       <h3 className="text-lg font-semibold text-gray-900 mb-4">Knowledge Check</h3>
