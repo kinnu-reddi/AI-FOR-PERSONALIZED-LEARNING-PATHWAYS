@@ -38,6 +38,9 @@ export const useAuth = () => {
     dataService.saveUser(updatedUser);
     dataService.setCurrentUser(updatedUser);
     setUser(updatedUser);
+    
+    // Trigger a refresh of learning data when user profile changes
+    window.dispatchEvent(new CustomEvent('userUpdated'));
   };
 
   return {

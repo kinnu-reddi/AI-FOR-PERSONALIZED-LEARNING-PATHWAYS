@@ -14,6 +14,17 @@ export const useLearning = () => {
 
   useEffect(() => {
     loadData();
+    
+    // Listen for user profile updates
+    const handleUserUpdate = () => {
+      loadData();
+    };
+    
+    window.addEventListener('userUpdated', handleUserUpdate);
+    
+    return () => {
+      window.removeEventListener('userUpdated', handleUserUpdate);
+    };
   }, [user]);
 
   const loadData = async () => {
