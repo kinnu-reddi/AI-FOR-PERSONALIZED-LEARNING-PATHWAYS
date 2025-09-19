@@ -96,7 +96,7 @@ export const CourseList: React.FC<CourseListProps> = ({ onCourseSelect }) => {
           return (
             <div
               key={course.id}
-              className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer overflow-hidden"
+              className="bg-white rounded-lg shadow-md hover:shadow-lg hover:scale-105 transition-all cursor-pointer overflow-hidden"
               onClick={() => onCourseSelect(course.id)}
             >
               <div className="p-6">

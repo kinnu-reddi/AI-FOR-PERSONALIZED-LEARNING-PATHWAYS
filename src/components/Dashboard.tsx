@@ -103,7 +103,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onViewChange, onCourseSele
                   return (
                     <div
                       key={course.id}
-                      className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-indigo-300 transition-colors cursor-pointer"
+                      className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-indigo-300 hover:shadow-md transition-all cursor-pointer"
                       onClick={() => onCourseSelect(course.id)}
                     >
                       <div className="flex-1">

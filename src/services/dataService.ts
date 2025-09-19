@@ -32,6 +32,9 @@ class DataService {
     const data = this.getData();
     data.currentUser = user;
     this.saveData(data);
+    
+    // Notify other parts of the app about user changes
+    window.dispatchEvent(new CustomEvent('currentUserChanged', { detail: user }));
   }
 
   // Course Management

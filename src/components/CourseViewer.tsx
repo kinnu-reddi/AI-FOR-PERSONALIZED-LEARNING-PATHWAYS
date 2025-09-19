@@ -141,7 +141,7 @@ export const CourseViewer: React.FC<CourseViewerProps> = ({ courseId, onBack }) 
                   <button
                     key={module.id}
                     onClick={() => handleModuleSelect(index)}
-                    className={`w-full text-left p-3 rounded-lg transition-colors ${
+                    className={`w-full text-left p-3 rounded-lg transition-all hover:shadow-sm ${
                       isActive
                         ? 'bg-indigo-50 border-2 border-indigo-200'
                         : 'hover:bg-gray-50 border-2 border-transparent'
